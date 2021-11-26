@@ -23,10 +23,13 @@ internal class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)
     {
-        // Use IServiceCollection Add extension methods here, e.g.
+        // Use IServiceCollection.Add extension methods here, e.g.
         builder.Services.AddDataProtection();
 
         builder.Services.AddSingleton(GetContainer(builder.Services));
+
+        // Important: Use AddScoped so our Autofac lifetime scope gets disposed
+        // when the function finishes executing
         builder.Services.AddScoped<LifetimeScopeWrapper>();
 
         builder.Services.Replace(ServiceDescriptor.Singleton(typeof(IJobActivator), typeof(AutofacJobActivator)));
@@ -35,17 +38,17 @@ internal class Startup : FunctionsStartup
 
     private static IContainer GetContainer(IServiceCollection serviceCollection)
     {
-        var builder = new ContainerBuilder();
-        builder.Populate(serviceCollection);
-        builder.RegisterModule<LoggerModule>();
+        var containerBuilder = new ContainerBuilder();
+        containerBuilder.Populate(serviceCollection);
+        containerBuilder.RegisterModule<LoggerModule>();
 
         // Register all classes in the Functions namespace
-        builder.RegisterAssemblyTypes(typeof(Startup).Assembly)
+        containerBuilder.RegisterAssemblyTypes(typeof(Startup).Assembly)
             .InNamespaceOf<Function1>();
 
         // Here you can register other dependencies with the ContainerBuilder like normal
-        builder.RegisterType<RandomNumberService>().As<IRandomNumberService>();
+        containerBuilder.RegisterType<RandomNumberService>().As<IRandomNumberService>();
 
-        return builder.Build();
+        return containerBuilder.Build();
     }
 }

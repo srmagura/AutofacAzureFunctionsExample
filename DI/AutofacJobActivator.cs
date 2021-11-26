@@ -11,7 +11,7 @@ internal class AutofacJobActivator : IJobActivatorEx
 {
     public T CreateInstance<T>()
     {
-        // In practice, this method will not get called.We cannot safely resolve T here
+        // In practice, this method will not get called. We cannot safely resolve T here
         // because we don't have access to an ILifetimeScope, so it's better to just
         // throw.
         throw new NotSupportedException();
